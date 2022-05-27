@@ -34,10 +34,7 @@ BOOL makemove(BoardState* board, uint8_t pos1, uint8_t pos2, uint32_t numspaces)
 		FlipBit(board->board, getIntermediateHole(pos1, pos2)); // and clear the peg from the intermediate hole
 		SetBit(board->board, pos2); // and then finally move the peg to the new hole
 		board->numpegs--;
-		for (uint32_t i = 0; i < numspaces; i++)
-		{
-			printf("   ");
-		}
+		printIndent(numspaces);
 		printf("Moved from %d to %d\n", pos1, pos2);
 		return TRUE;
 	}
@@ -57,13 +54,11 @@ BOOL undomove(BoardState* board, uint8_t pos1, uint8_t pos2, uint32_t numspaces)
 		SetBit(board->board, getIntermediateHole(pos1, pos2)); // put the peg back in the intermediate hole
 		SetBit(board->board, pos1); // and then finally move the peg to the new hole
 		board->numpegs++;
-		for (uint32_t i = 0; i < numspaces; i++)
-		{
-			printf("   ");
-		}
+		printIndent(numspaces);
 		printf("Undid a move back from %d to %d\n", pos1, pos2);
 		return TRUE;
 	}
+	printIndent(numspaces);
 	printf("Failure\n");
 	return FALSE; // if we're here we can't undo the move
 }
@@ -74,7 +69,8 @@ GAMESTATE solvepeggame(BoardState* board, uint32_t numspaces)
 	GAMESTATE results;
 	BOOL legalmove;
 
-	printBoardState(board); // here for testing, will likely be overwhelming number of prints
+	printBoardState(board, numspaces); // here for testing, will likely be overwhelming number of prints
+	printIndent(numspaces);
 	printbinrep(board->board);
 	printf("\n");
 

@@ -15,7 +15,7 @@ int main(void)
 	GAMESTATE results;
 	initBoardState(&testBoard, 0);
 
-	printBoardState(&testBoard);
+	printBoardState(&testBoard, 0);
 
 	results = solvepeggame(&testBoard, 0);
 

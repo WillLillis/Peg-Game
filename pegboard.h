@@ -1,7 +1,6 @@
 /*
 	- This header will include a definition of the actual board used to play the game
-	- Not sure how to organize the various functions across the project files so there
-	may or may not be some code in here as well
+	- Not sure how to organize the various functions across the project files
 */
 #pragma once
 
@@ -18,7 +17,7 @@
 #define		PEGCHAR			219
 #define		NONPEGCHAR		176
 
-// Define legal moves for each position bitwise
+// Define legal moves for each board position bitwise
 #define		MOVES0			0x28		// 3, 5
 #define		MOVES1			0x140		// 6, 8
 #define		MOVES2			0x280		// 7, 9
@@ -138,12 +137,9 @@ uint8_t getIntermediateHole(uint8_t pos1, uint8_t pos2)
 	}
 }
 
-
-
 // function to initialize a BoardState struct
 	// arg to choose the 1 free position, could add more options later
 		// i.e. if you want it to solve from a boardstate mid game
-
 void initBoardState(BoardState* board, uint8_t openpos)
 {
 	assert(openpos >= 0 && openpos <= 14);
@@ -156,7 +152,7 @@ void initBoardState(BoardState* board, uint8_t openpos)
 	board->numpegs = NUMHOLES - 1;
 }
 
-int postochar(BoardState* board, uint8_t pos)
+char postochar(BoardState* board, uint8_t pos)
 {
 	assert(pos >= 0 && pos <= 14);
 	
@@ -165,6 +161,14 @@ int postochar(BoardState* board, uint8_t pos)
 		return PEGCHAR;
 	}
 	return NONPEGCHAR; // otherwise the position is empty
+}
+
+void printIndent(uint32_t numspaces)
+{
+	for (uint32_t i = 0; i < numspaces; i++)
+	{
+		printf("\t");
+	}
 }
 
 void printbinrep(uint16_t num)
@@ -177,7 +181,7 @@ void printbinrep(uint16_t num)
 	printf("%d", num % 2);
 }
 
-void printBoardState(BoardState* board)
+void printBoardState(BoardState* board, uint32_t numspaces)
 {
 	//printf("Test: %hu \n", board->board);
 	//printbinrep(board->board);
@@ -185,17 +189,25 @@ void printBoardState(BoardState* board)
 
 	if (board->numpegs < 10)
 	{
+		printIndent(numspaces);
 		printf(" %d    / \\\n", board->numpegs);
 	}
 	else
 	{
+		printIndent(numspaces);
 		printf(" %d   / \\\n", board->numpegs);
 	}
+	printIndent(numspaces);
 	printf("     / %c \\\n", postochar(board, 0));
+	printIndent(numspaces);
 	printf("    / %c %c \\\n", postochar(board, 1), postochar(board, 2));
+	printIndent(numspaces);
 	printf("   / %c %c %c \\\n", postochar(board, 3), postochar(board, 4), postochar(board, 5));
+	printIndent(numspaces);
 	printf("  / %c %c %c %c \\\n", postochar(board, 6), postochar(board, 7), postochar(board, 8), postochar(board, 9));
+	printIndent(numspaces);
 	printf(" / %c %c %c %c %c \\\n", postochar(board, 10), postochar(board, 11), postochar(board, 12), postochar(board, 13), postochar(board, 14));
+	printIndent(numspaces);
 	printf("---------------\n");
 }
 
