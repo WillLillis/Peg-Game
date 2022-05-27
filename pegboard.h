@@ -37,6 +37,7 @@
 #define		GetBit(var, bit) ((var & (1 << bit)) != 0) 
 #define		SetBit(var, bit) (var |= (1 << bit))
 #define		FlipBit(var, bit) (var ^= (1 << bit))
+#define		ClearBit(var, bit) (var &= ~(1 << bit))
 
 /*
 	- Struct to track the current state of a game
@@ -52,7 +53,7 @@ typedef struct BoardState {
 
 
 // Function to return the bitwise legal move representation of a given position
-uint8_t getMoves(uint8_t pos)
+uint16_t getMoves(uint8_t pos)
 {
 	assert(pos >= 0 && pos <= 14);
 	switch (pos) {
@@ -95,7 +96,7 @@ uint8_t getIntermediateHole(uint8_t pos1, uint8_t pos2)
 {
 	assert(pos1 >= 0 && pos1 <= 14);
 	assert(pos2 >= 0 && pos2 <= 14);
-	uint16_t index = pow(2, pos1) + pow(2, pos2);
+	uint16_t index = (uint16_t)pow(2, pos1) + (uint16_t)pow(2, pos2);
 
 	switch (index) {
 	case 9:			// 0 to 3, 3 to 0
@@ -171,6 +172,14 @@ void printIndent(uint32_t numspaces)
 	}
 }
 
+void fprintIndent(uint32_t numspaces, FILE* fptr)
+{
+	for (uint32_t i = 0; i < numspaces; i++)
+	{
+		fprintf(fptr, "\t");
+	}
+}
+
 void printbinrep(uint16_t num)
 {
 	if (num > 1)
@@ -179,6 +188,16 @@ void printbinrep(uint16_t num)
 	}
 
 	printf("%d", num % 2);
+}
+
+void fprintbinrep(uint16_t num, FILE* fptr)
+{
+	if (num > 1)
+	{
+		fprintbinrep(num / 2, fptr);
+	}
+
+	fprintf(fptr, "%d", num % 2);
 }
 
 void printBoardState(BoardState* board, uint32_t numspaces)
@@ -209,6 +228,36 @@ void printBoardState(BoardState* board, uint32_t numspaces)
 	printf(" / %c %c %c %c %c \\\n", postochar(board, 10), postochar(board, 11), postochar(board, 12), postochar(board, 13), postochar(board, 14));
 	printIndent(numspaces);
 	printf("---------------\n");
+}
+
+void fprintBoardState(BoardState* board, uint32_t numspaces, FILE* fptr)
+{
+	//printf("Test: %hu \n", board->board);
+	//printbinrep(board->board);
+	//printf("\n");
+
+	if (board->numpegs < 10)
+	{
+		fprintIndent(numspaces, fptr);
+		fprintf(fptr, " %d    / \\\n", board->numpegs);
+	}
+	else
+	{
+		fprintIndent(numspaces, fptr);
+		fprintf(fptr, " %d   / \\\n", board->numpegs);
+	}
+	fprintIndent(numspaces, fptr);
+	fprintf(fptr, "     / %c \\\n", postochar(board, 0));
+	fprintIndent(numspaces, fptr);
+	fprintf(fptr, "    / %c %c \\\n", postochar(board, 1), postochar(board, 2));
+	fprintIndent(numspaces, fptr);
+	fprintf(fptr, "   / %c %c %c \\\n", postochar(board, 3), postochar(board, 4), postochar(board, 5));
+	fprintIndent(numspaces, fptr);
+	fprintf(fptr, "  / %c %c %c %c \\\n", postochar(board, 6), postochar(board, 7), postochar(board, 8), postochar(board, 9));
+	fprintIndent(numspaces, fptr);
+	fprintf(fptr, " / %c %c %c %c %c \\\n", postochar(board, 10), postochar(board, 11), postochar(board, 12), postochar(board, 13), postochar(board, 14));
+	fprintIndent(numspaces, fptr);
+	fprintf(fptr, "---------------\n");
 }
 
 

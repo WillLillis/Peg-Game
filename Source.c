@@ -11,17 +11,32 @@
 
 int main(void)
 {
+	FILE* fptr;
+	fopen_s(&fptr, "output.txt", "w");
+	assert(fptr != NULL);
+
 	BoardState testBoard;
 	GAMESTATE results;
 	initBoardState(&testBoard, 0);
-
+	 
+	BOOL btest = makemove(&testBoard, 1, 8, 0, fptr);
+	if (btest)
+	{
+		printf("1\n");
+	}
 	printBoardState(&testBoard, 0);
 
-	results = solvepeggame(&testBoard, 0);
+	results = solvepeggame(&testBoard, fptr, 0);
 
 	printf("Final Results: ");
 	printGameState(results);
 	printf("\n");
+
+	fprintf(fptr, "Final Results: ");
+	fprintGameState(results, fptr);
+	fprintf(fptr, "\n");
+
+	fclose(fptr);
 
 	return 0;
 }
