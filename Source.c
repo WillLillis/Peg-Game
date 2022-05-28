@@ -8,10 +8,11 @@
 
 #include"pegboard.h"
 #include"gamesolver.h"
+#include"playgame.h"
 
 int main(void)
 {
-	FILE* fptr;
+	/*FILE* fptr;
 	fopen_s(&fptr, "output.txt", "w");
 	assert(fptr != NULL);
 
@@ -36,7 +37,9 @@ int main(void)
 	fprintGameState(results, fptr);
 	fprintf(fptr, "\n");
 
-	fclose(fptr);
+	fclose(fptr);*/
+
+	playgame(0);
 
 	return 0;
 }

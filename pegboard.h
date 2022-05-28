@@ -148,7 +148,7 @@ void initBoardState(BoardState* board, uint8_t openpos)
 	{
 		SetBit(board->board, i);
 	}
-	FlipBit(board->board, openpos);
+	ClearBit(board->board, openpos);
 
 	board->numpegs = NUMHOLES - 1;
 }

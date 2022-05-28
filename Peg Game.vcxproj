@@ -144,6 +144,7 @@
   <ItemGroup>
     <ClInclude Include="gamesolver.h" />
     <ClInclude Include="pegboard.h" />
+    <ClInclude Include="playgame.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

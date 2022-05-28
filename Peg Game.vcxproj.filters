@@ -26,5 +26,8 @@
     <ClInclude Include="gamesolver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="playgame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
