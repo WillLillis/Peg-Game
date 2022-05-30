@@ -136,6 +136,8 @@ uint8_t getIntermediateHole(uint8_t pos1, uint8_t pos2)
 	case 20480:		// 12 to 14, 14 to 12
 		return 13;
 	}
+
+	return 255;
 }
 
 // function to initialize a BoardState struct
@@ -143,7 +145,9 @@ uint8_t getIntermediateHole(uint8_t pos1, uint8_t pos2)
 		// i.e. if you want it to solve from a boardstate mid game
 void initBoardState(BoardState* board, uint8_t openpos)
 {
+	assert(board != NULL);
 	assert(openpos >= 0 && openpos <= 14);
+
 	for (uint8_t i = 0; i < 15; i++)
 	{
 		SetBit(board->board, i);
@@ -155,6 +159,7 @@ void initBoardState(BoardState* board, uint8_t openpos)
 
 char postochar(BoardState* board, uint8_t pos)
 {
+	assert(board != NULL);
 	assert(pos >= 0 && pos <= 14);
 	
 	if (GetBit(board->board, pos))
@@ -172,8 +177,9 @@ void printIndent(uint32_t numspaces)
 	}
 }
 
-void fprintIndent(uint32_t numspaces, FILE* fptr)
+void fprintIndent(FILE* fptr, uint32_t numspaces)
 {
+	assert(fptr != NULL);
 	for (uint32_t i = 0; i < numspaces; i++)
 	{
 		fprintf(fptr, "\t");
@@ -190,8 +196,9 @@ void printbinrep(uint16_t num)
 	printf("%d", num % 2);
 }
 
-void fprintbinrep(uint16_t num, FILE* fptr)
+void fprintbinrep(FILE* fptr, uint16_t num)
 {
+	assert(fptr != NULL);
 	if (num > 1)
 	{
 		fprintbinrep(num / 2, fptr);
@@ -200,12 +207,34 @@ void fprintbinrep(uint16_t num, FILE* fptr)
 	fprintf(fptr, "%d", num % 2);
 }
 
+// function to check if the ending conditions of the game have been met
+		// checks if there's only 1 peg left first, otherwise there's any legal moves left on the board
+// returns FALSE if the game can continue to played, TRUE if ending conditions have been met
+BOOL checkendgame(BoardState* board)
+{
+	assert(board != NULL);
+
+	// check to see if there's any possible moves, if so return TRUE, otherwise FALSE
+	for (uint8_t currenthole = 0; currenthole < NUMHOLES; currenthole++) // for each position on the board
+	{
+		if (GetBit(board->board, currenthole)) // if there's a peg in that spot
+		{
+			for (uint8_t move = 0; move < NUMHOLES; move++) // iterate through the possible moves for that peg
+			{
+				if (checkmove(board, currenthole, move)) // check if the move is allowed
+				{
+					return FALSE; // if it is, return FALSE, otherwise keep checking for other moves
+				}
+			}
+		}
+	}
+
+	return TRUE; // if we've reached this point there are no legal moves remaining
+}
+
 void printBoardState(BoardState* board, uint32_t numspaces)
 {
-	//printf("Test: %hu \n", board->board);
-	//printbinrep(board->board);
-	//printf("\n");
-
+	assert(board != NULL);
 	if (board->numpegs < 10)
 	{
 		printIndent(numspaces);
@@ -230,12 +259,10 @@ void printBoardState(BoardState* board, uint32_t numspaces)
 	printf("---------------\n");
 }
 
-void fprintBoardState(BoardState* board, uint32_t numspaces, FILE* fptr)
+void fprintBoardState(FILE* fptr, BoardState* board, uint32_t numspaces)
 {
-	//printf("Test: %hu \n", board->board);
-	//printbinrep(board->board);
-	//printf("\n");
-
+	assert(board != NULL);
+	assert(fptr != NULL);
 	if (board->numpegs < 10)
 	{
 		fprintIndent(numspaces, fptr);
@@ -260,4 +287,14 @@ void fprintBoardState(BoardState* board, uint32_t numspaces, FILE* fptr)
 	fprintf(fptr, "---------------\n");
 }
 
+void printNumberedBoard(BoardState* board)
+{
+	assert(board != NULL);
+
+	printf("         0 \n");
+	printf("       1  2 \n");
+	printf("     3  4  5 \n");
+	printf("    6  7  8  9 \n");
+	printf("  10 11 12 13 14 \n");
+}
 

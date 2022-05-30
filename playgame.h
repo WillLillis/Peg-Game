@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include<stdlib.h>
 #include<time.h>
+#include<Windows.h>
 #include"pegboard.h"
 #include"gamesolver.h"
 
@@ -19,6 +20,31 @@ void printDots(uint8_t num)
 	}
 }
 
+DWORD WINAPI AsycPrintDots(void* data)
+{
+	uint32_t ms = 0;
+	uint32_t trig = 1000;
+	uint8_t numdots = 0;
+	clock_t before, difference;
+
+	while (numdots < 4 && (*(BOOL*)data))
+	{
+		printf("\t\t\t\t\t\t      ");
+		printDots(numdots);
+		numdots = (numdots + 1) % 4;
+		printf("\n");
+		before = clock();
+		do {
+			difference = clock() - before;
+			ms = difference * 1000 / CLOCKS_PER_SEC;
+		} while (ms < trig);
+		printf("\x1b[1F"); // Move to beginning of previous line
+		printf("\x1b[2K"); // Clear entire line
+	}
+
+	return 0;
+}
+
 /*
 * Prints "main menu"/ welcome message for the game, takes in user choice to exit game or play game
 */
@@ -28,6 +54,12 @@ char printMenu(void)
 	uint32_t ms = 0;
 	uint32_t trig = 1000;
 	clock_t before, difference;
+	//volatile BOOL threadsync = TRUE;
+	BOOL* threadsync = (BOOL*)malloc(sizeof(BOOL));
+	if (threadsync != NULL)
+	{
+		*threadsync = TRUE;
+	}
 	char userchoice;
 
 	
@@ -209,43 +241,98 @@ char printMenu(void)
 	printf("\n\n");
 	printf("\t\t\t\t\t\t");
 	printf("Press 'X' to exit\n\n");
-
-	while (numdots < 4)
-	{
-		printf("\t\t\t\t\t      ");
-		printf("Press 'SPACE' to play");
-		printDots(numdots);
-		numdots = (numdots + 1) % 5;
-		printf("\n");
-		before = clock();
-		do {
-			difference = clock() - before;
-			ms = difference * 1000 / CLOCKS_PER_SEC;
-		} while (ms < trig);
-		printf("\x1b[1F"); // Move to beginning of previous line
-		printf("\x1b[2K"); // Clear entire line
-	}
 	printf("\t\t\t\t\t      ");
-	printf("Press 'SPACE' to play");
-	printDots(numdots);
-	printf("\n");
-	
+	printf("Press 'SPACE' to play\n");
+
+	// spawn off a thread to print the dots asyncronously
+	HANDLE threadhandle = CreateThread(NULL, 0, AsycPrintDots, threadsync, 0, NULL);
+
+	// get the user's choice (Quit or Play)
 	do {
 		userchoice = toupper(_getch());
 	} while (userchoice != 'X' && userchoice != 32);
 	
+	// now that the user has chosen, let's tell the dot printing thread to clean up shop
+	if (threadsync != NULL)
+	{
+		*threadsync = FALSE;
+	}
+	// and then just wait for it to return
+	if (threadhandle != NULL)
+	{
+		WaitForSingleObject(threadhandle, INFINITE);
+	}
+	
+	free(threadsync);
+
 	return userchoice;
 }
 
+void getUserMove(BoardState* board, uint8_t* pos1, uint8_t* pos2)
+{
+	assert(board != NULL);
+	uint16_t retval = 0;
+	
+	printNumberedBoard(board);
+
+	printf("Enter the position of the peg to move:\n");
+	scanf_s("%hhu", pos1);
+
+	printf("Enter the position to move the peg to:\n");
+	scanf_s("%hhu", pos2);
+}
+
+void printgameresults(BoardState* board)
+{
+	assert(board != NULL);
+
+	uint8_t numpegs = board->numpegs;
+
+	switch (numpegs) {
+	case 1: 
+		printf("1: YOU'RE GENIUS\n");
+		break;
+	case 2:
+		printf("2: YOU'RE PURTY SMART\n");
+		break;
+	case 3:
+		printf("3: YOU'RE JUST PLAIN DUMB\N");
+		break;
+	case 4:
+		printf(">=4: YOU'RE JUST PLAIN EG-NO-RA-MOOSE\n");
+		break;
+	}
+}
+
+// handles the user once they've selected to play the game
 GAMESTATE userplays(BoardState* board)
 {
-	printBoardState(board, 0);
+	assert(board != NULL);
+	uint8_t pos1, pos2;
+	uint16_t usermove;
+	BOOL legalmove;
+	char c = 0;
 
-	// check if the game is over
-	// if not, prompt user for their move
-	// make sure the move is legal, if it's not re-prompt
-	// if it's ok enact it, 
-	// maybe encase all this in a usermoves function of some sort
+	while (!checkendgame(board)) // while the ending conditions of the game haven't been met...
+	{
+		printBoardState(board, 0);
+
+		do {
+			getUserMove(board, &pos1, &pos2); // get the user's selection
+			legalmove = checkmove(board, pos1, pos2); // make sure they constitute a legal move
+		} while (legalmove == FALSE);
+		
+		makemove(board, pos1, pos2, 0);
+		printf("\n\n\nMoved from position %d to position %d:\n", pos1, pos2);
+	}
+
+	printf("\n\n\n");
+	printgameresults(board);
+	printf("\n\n\t\t\t\t\t\tPress any key to continue.\n");
+
+	scanf_s("%c", &c);
+
+	return (board->numpegs == 1) ? WINSTATE : LOSSSTATE;
 }
 
 
@@ -270,10 +357,7 @@ GAMESTATE playgame(uint8_t startpos)
 
 		initBoardState(&Board, startpos); // otherwise we play
 		userplays(&Board);
-
 	}
 	
-
-
 	return results;
 }
