@@ -20,14 +20,15 @@ void printDots(uint8_t num)
 	}
 }
 
-DWORD WINAPI AsycPrintDots(void* data)
+// prints specified number of dots centered on the screen, asyncronously
+DWORD WINAPI AsycPrintDots(BOOL* data)
 {
 	uint32_t ms = 0;
 	uint32_t trig = 1000;
 	uint8_t numdots = 0;
 	clock_t before, difference;
 
-	while (numdots < 4 && (*(BOOL*)data))
+	while (numdots < 4 && *data)
 	{
 		printf("\t\t\t\t\t\t      ");
 		printDots(numdots);
@@ -264,6 +265,7 @@ char printMenu(void)
 	}
 	
 	free(threadsync);
+	fflush(stdin);
 
 	return userchoice;
 }
@@ -276,10 +278,12 @@ void getUserMove(BoardState* board, uint8_t* pos1, uint8_t* pos2)
 	printNumberedBoard(board);
 
 	printf("Enter the position of the peg to move:\n");
-	scanf_s("%hhu", pos1);
+	scanf_s("%hhu", pos1, 1);
 
+	fflush(stdin);
 	printf("Enter the position to move the peg to:\n");
-	scanf_s("%hhu", pos2);
+	scanf_s("%hhu", pos2, 1);
+	fflush(stdin);
 }
 
 void printgameresults(BoardState* board)
@@ -296,7 +300,7 @@ void printgameresults(BoardState* board)
 		printf("2: YOU'RE PURTY SMART\n");
 		break;
 	case 3:
-		printf("3: YOU'RE JUST PLAIN DUMB\N");
+		printf("3: YOU'RE JUST PLAIN DUMB\n");
 		break;
 	case 4:
 		printf(">=4: YOU'RE JUST PLAIN EG-NO-RA-MOOSE\n");
@@ -311,7 +315,7 @@ GAMESTATE userplays(BoardState* board)
 	uint8_t pos1, pos2;
 	uint16_t usermove;
 	BOOL legalmove;
-	char c = 0;
+	char s[10];
 
 	while (!checkendgame(board)) // while the ending conditions of the game haven't been met...
 	{
@@ -330,7 +334,8 @@ GAMESTATE userplays(BoardState* board)
 	printgameresults(board);
 	printf("\n\n\t\t\t\t\t\tPress any key to continue.\n");
 
-	scanf_s("%c", &c);
+	fflush(stdin);
+	scanf_s("%s", s, (unsigned)_countof(s)); // why isn't this blocking?
 
 	return (board->numpegs == 1) ? WINSTATE : LOSSSTATE;
 }
@@ -356,7 +361,7 @@ GAMESTATE playgame(uint8_t startpos)
 		}
 
 		initBoardState(&Board, startpos); // otherwise we play
-		userplays(&Board);
+		results = userplays(&Board);
 	}
 	
 	return results;
