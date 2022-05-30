@@ -1,5 +1,4 @@
 #pragma once
-
 /*
 * Code to allow a user to play the actual peg game on the computer
 */
@@ -57,10 +56,8 @@ char printMenu(void)
 	clock_t before, difference;
 	//volatile BOOL threadsync = TRUE;
 	BOOL* threadsync = (BOOL*)malloc(sizeof(BOOL));
-	if (threadsync != NULL)
-	{
-		*threadsync = TRUE;
-	}
+	assert(threadsync != NULL);
+	*threadsync = TRUE;
 	char userchoice;
 
 	
@@ -279,8 +276,8 @@ void getUserMove(BoardState* board, uint8_t* pos1, uint8_t* pos2)
 
 	printf("Enter the position of the peg to move:\n");
 	scanf_s("%hhu", pos1, 1);
-
 	fflush(stdin);
+
 	printf("Enter the position to move the peg to:\n");
 	scanf_s("%hhu", pos2, 1);
 	fflush(stdin);
@@ -335,7 +332,7 @@ GAMESTATE userplays(BoardState* board)
 	printf("\n\n\t\t\t\t\t\tPress any key to continue.\n");
 
 	fflush(stdin);
-	scanf_s("%s", s, (unsigned)_countof(s)); // why isn't this blocking?
+	scanf_s("%s", s, (unsigned)_countof(s));
 
 	return (board->numpegs == 1) ? WINSTATE : LOSSSTATE;
 }
